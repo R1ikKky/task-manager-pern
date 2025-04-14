@@ -2,14 +2,14 @@ const prisma = require("../../prisma.js");
 
 const getAllTasks = async (userId) => {
     return prisma.task.findMany({
-        where: {userId},
-        orderBy: {id: "desc"}
+        where: { userId },
+        orderBy: { createdAt: "desc" }
     })
 }
 
-const createTask = async (title, description, userId) => {
+const createTask = async (title, description, userId, deadline = null, importance = "low") => {
     return prisma.task.create({
-        data: {title, description, userId}
+        data: {title, description, completed: false, importance, deadline, userId}
     })
 }
 

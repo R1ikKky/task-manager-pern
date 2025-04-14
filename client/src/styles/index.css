@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes cloud-move {
+  0% {
+    transform: translateX(0);
+    opacity: 0.2;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(-200vw);
+    opacity: 0.2;
+  }
+}
+
+@keyframes cloud-move-left {
+  0% {
+    transform: translateX(0);
+    opacity: 0.2;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(200vw);
+    opacity: 0.2;
+  }
+}
+
+.animate-cloud {
+  animation-name: cloud-move;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.animate-cloud-left {
+  animation-name: cloud-move-left;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}

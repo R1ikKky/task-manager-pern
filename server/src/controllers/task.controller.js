@@ -3,7 +3,8 @@ const { taskCreateSchema, taskUpdateSchema } = require("../schemas/task.schema")
 
 const getAll = async(req, res) => {
     try{
-        const tasks = await taskService.getAllTasks(req.user.id)
+        const userId = req.user.id
+        const tasks = await taskService.getAllTasks(userId)
         res.status(200).json(tasks)
     }catch(error){
         console.error("GET ERROR:", error)
@@ -18,12 +19,12 @@ const create = async(req, res) => {
         return res.status(400).json({ error: parsed.error.flatten().fieldErrors })
     }
 
-    const {title, description} = parsed.data
-
+    const {title, description, deadline, importance = "low"} = parsed.data
     const userId = req.user.id
+
     try{
-        const task = await taskService.createTask(title, description, userId)
-        res.status(200).json(task)
+        const task = await taskService.createTask(title, description, userId, deadline, importance)
+        res.status(201).json(task)
     }catch(error){
         console.error("CREATE ERROR:", error)
         res.status(500).json({ error: error.message })
@@ -38,10 +39,11 @@ const update = async(req, res) => {
     }
 
     const id = req.params.id
-    const { title, description, completed } = parsed.data
+    const updates = parsed.data
+    const userId = req.user.id
 
     try{
-        const task = await taskService.updateTask(id, {title, description, completed}, req.user.id)
+        const task = await taskService.updateTask(id, updates, userId)
         res.status(200).json(task)
     }catch(error){
         console.error("UPDATE ERROR:", error)
