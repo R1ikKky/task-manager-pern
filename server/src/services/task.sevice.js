@@ -7,22 +7,22 @@ const getAllTasks = async (userId) => {
     })
 }
 
-const createTask = async (title, description, userId, deadline = null, importance = "low") => {
+const createTask = async (title, description, userId, deadline = "", importance = "low") => {
     return prisma.task.create({
-        data: {title, description, completed: false, importance, deadline, userId}
+        data: {title, description, completed: false, importance, deadline, createdAt: new Date().toISOString(), userId}
     })
 }
 
-const updateTask = async ( id, data, userId) => {
+const updateTask = async ( id, updates, userId) => {
     await verifyOwnership(id, userId)
 
     return prisma.task.update({
         where: { id },
-        data
+        data: updates
     })
 }
 
-const deleteTask = async ( id, userId) => {
+const deleteTask = async (id, userId) => {
     await verifyOwnership(id, userId)
 
     return prisma.task.delete({

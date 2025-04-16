@@ -4,17 +4,38 @@ import { Link } from 'react-router-dom';
 import { IoIosMail } from 'react-icons/io';
 import { IoLockClosed } from 'react-icons/io5';
 import { FaUser } from 'react-icons/fa';
+import { registerUser } from '../api/user.api';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const navigate = useNavigate()
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  
+const handleRegister = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setLoading(true)
+  setError("")
+
+  const result = await registerUser(email, username, password)
+
+  if(result.success){
+    navigate("/")
+  } else {
+    setError(result.message || "Register Failed")
+  }
+
+  setLoading(false)
+}
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4">
       <div className="relative w-[400px] bg-white/10 border border-white/30 rounded-[20px] backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.5)] p-10">
         <h2 className="text-[30px] font-extrabold text-center text-white mb-8">Register</h2>
-        <form action="#">
+        <form onSubmit={handleRegister}>
           {/* Username */}
           <div className="relative w-full h-[50px] border-b-2 border-white/40 mb-8">
             <span className="absolute right-[10px] text-white text-xl leading-[57px]">

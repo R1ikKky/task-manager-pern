@@ -3,16 +3,38 @@ import { useState } from 'react';
 import { IoIosMail } from 'react-icons/io';
 import { IoLockClosed } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
+import { loginUser } from '../api/user.api';
+import { useNavigate } from 'react-router-dom';
+
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
+  
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError("")
+  
+    const result = await loginUser(email, password)
+    
+    if (result.success) {
+      navigate("/")
+    } else {
+      setError(result.message || "Login Failed")
+    }
+  
+    setLoading(false)
+  }
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 relative z-10">
       <div className="relative w-[400px] bg-white/10 border border-white/30 rounded-[20px] backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.5)] p-10">
         <h2 className="text-[30px] font-extrabold text-center text-white mb-8">Login</h2>
-        <form action="#">
+        <form onSubmit={handleLogin}>
           {/* Email */}
           <div className="relative w-full h-[50px] border-b-2 border-white/40 mb-8">
             <span className="absolute right-[10px] text-white text-xl leading-[57px]">

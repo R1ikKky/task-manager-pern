@@ -21,6 +21,9 @@ model Task {
   title         String
   description   String?
   completed     Boolean    @default(false)
+  importance    String     @default("low")
+  deadline      String?
+  createdAt     DateTime   @default(now())
   userId        String
   user          User       @relation(fields: [userId], references: [id])
 }

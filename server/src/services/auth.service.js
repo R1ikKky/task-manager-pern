@@ -30,7 +30,7 @@ const login = async ({ email, password }) => {
     const user = await prisma.user.findUnique({where: {email} })
     if(!user) throw new Error("Incorrect email or password")
 
-    const isValid = bcrypt.compare(password, user.password)
+    const isValid = await bcrypt.compare(password, user.password)
     if(!isValid) throw new Error("Incorrect email or password")
 
     const { accessToken, refreshToken } = generateTokens(user)

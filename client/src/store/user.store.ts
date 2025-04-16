@@ -1,20 +1,21 @@
 
 import { create } from 'zustand';
+import { User } from '../interfaces/user.interface';
 
-interface User {
-    id: string
-    email: string
-    userName: string
-}
-
-interface useAuthUser {
+interface useAuthStore {
     user: User | null
+    accessToken: string | null
     setUser: (user: User) => void
+    setAccessToken: (token: string) => void
     logout: () => void
 }
 
-export const useAuthStore = create<useAuthUser>((set) => ({
+export const useAuthStore = create<useAuthStore>((set) => ({
     user: null,
+    accessToken: null,
+
     setUser: (user) => set({user}),
-    logout: () => set({user: null})
+    setAccessToken: (token) => set({accessToken: token}),
+
+    logout: () => set({user: null, accessToken: null}),
 }))
