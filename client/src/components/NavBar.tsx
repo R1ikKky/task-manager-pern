@@ -1,6 +1,8 @@
 import { FaUserCircle } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const NavBar = () => {
+  const navigate = useNavigate()
   return (
     <header className="w-full px-6 py-4 flex justify-between items-center bg-white/10 backdrop-blur-md text-white border-b border-white/20 shadow">
       {/* Левая часть: иконка и переключатели */}
@@ -14,7 +16,7 @@ const NavBar = () => {
         <button className="px-4 py-1.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10">Calendar</button>
       </div>
 
-      <div className="text-2xl text-white/70">
+      <div className="text-2xl text-white/70" onClick={() => navigate("/profile")}>
         <FaUserCircle />
       </div>
     </header>

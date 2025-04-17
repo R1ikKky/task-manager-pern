@@ -5,7 +5,6 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen text-white">
       <NavBar />
-      
       <Body />
     </div>
   );

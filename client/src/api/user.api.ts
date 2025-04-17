@@ -20,6 +20,7 @@ export const loginUser = async (email: string, password: string) => {
   }
 };
 
+
 export const registerUser = async (email: string, userName: string, password:string) => {
     try{
         const res = await api.post("/auth/register", { email, userName, password })
