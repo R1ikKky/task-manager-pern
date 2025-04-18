@@ -6,7 +6,7 @@ export const refreshUser = async () => {
         const res = await api.post("/auth/refresh")
         const { accessToken, user } = res.data
 
-        const { setUser, setAccessToken } = useAuthStore()
+        const { setUser, setAccessToken } = useAuthStore.getState()
         setUser(user)
         setAccessToken(accessToken)
 

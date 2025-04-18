@@ -29,6 +29,13 @@ const refresh = async(req, res) => {
     try{
         const token = req.cookies.refreshToken
         const data = await authService.refresh(token)
+        res.cookie("refreshToken", data.refreshToken, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "strict",
+            maxAge: 7 * 24 * 60 * 60 *1000,
+            overwrite: true,
+        })
         res.status(200).json(data)
     }catch(e){
         res.status(401).json({ error: e.message })

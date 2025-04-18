@@ -55,48 +55,44 @@ const login = async ({ email, password }) => {
 };
 
 const refresh = async (token) => {
-  if (!token) throw new Error("Refresh token absense");
-
-  let payload;
-  try {
-    payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-  } catch (err) {
-    console.log("🔥 JWT VERIFY ERROR:", err.name, err.message, err.expiredAt);
-    throw new Error("Invalid refresh token");
-  }
+    if (!token) throw new Error("Refresh token absense");
   
-
-  const user = await prisma.user.findUnique({ where: { id: payload.id } });
-  if (!user) throw new Error("User not found");
-
-  // LOG — для отладки
-  console.log("💾 Token from DB:", user.refreshToken);
-  console.log("🍪 Token from Cookie:", token);
-
-  // Сравнение токенов
-  if (user.refreshToken !== token) {
-    console.warn("🚫 Refresh token mismatch");
-    throw new Error("Invalid refresh token");
-  }
-
-  const { accessToken, refreshToken } = generateTokens(user);
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { refreshToken },
-  });
-
-  return {
-    accessToken,
-    refreshToken,
-    user: {
-      id: user.id,
-      email: user.email,
-      userName: user.userName,
-    },
+    // 1) Проверяем подпись и срок жизни refresh‑токена
+    let payload;
+    try {
+      payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET); // throws if expired/invalid
+    } catch (err) {
+      throw new Error("Invalid refresh token");
+    }
+  
+    // 2) Находим пользователя
+    const user = await prisma.user.findUnique({ where: { id: payload.id } });
+    if (!user) throw new Error("User not found");
+  
+    // 3) Убеждаемся, что токен из куки совпадает с тем, что хранится в БД
+    if (user.refreshToken !== token) {
+      throw new Error("Invalid refresh token");          // кука подделана/устарела
+    }
+  
+    // 4) Генерируем НОВЫЙ access‑токен (refresh оставляем прежний)
+    const accessToken = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_ACCESS_SECRET,
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m" }
+    );
+  
+    // 5) Отдаём данные
+    return {
+      accessToken,            // новый короткоживущий токен
+      refreshToken: token,    // тот же, что был в куке и в БД
+      user: {
+        id: user.id,
+        email: user.email,
+        userName: user.userName,
+      },
+    };
   };
-};
-
+  
 const logout = async (token) => {
   try {
     const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
