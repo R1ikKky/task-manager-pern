@@ -1,11 +1,16 @@
-// src/pages/Profile.tsx
+import { logoutUser } from "../api/user.api";
 import { useAuthStore } from '../store/user.store';
 import { useNavigate } from 'react-router-dom';
 import { FaUserCircle } from 'react-icons/fa';
 
 const Profile = () => {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logoutUser()
+    navigate("/login")
+  }
 
   if (!user) return <div className="text-white text-center">No user data available.</div>;
 
@@ -31,13 +36,12 @@ const Profile = () => {
               <li>You joined TaskSpace to get things done 🧠</li>
               <li>You love clean UIs ✨</li>
               <li>Your favorite cloud is probably cirrus ☁️</li>
-              {/* <li>You're tracking tasks since {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'unknown'} ⌚</li> */}
             </ul>
           </div>
 
           <button
             className="mt-8 px-6 py-3 bg-red-600 hover:bg-red-500 text-white font-semibold rounded-xl transition-colors"
-            onClick={logout}
+            onClick={handleLogout}
           >
             Logout
           </button>

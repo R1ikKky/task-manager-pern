@@ -1,4 +1,4 @@
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { v4, uuidv4 } = require("uuid");
 const prisma = require("../../prisma");
@@ -55,44 +55,59 @@ const login = async ({ email, password }) => {
 };
 
 const refresh = async (token) => {
-    if (!token) throw new Error("Refresh token absense");
+  if (!token) throw new Error("Refresh token absense");
+
+  //проверяем подпись и срок жизни текущего refresh‑токена
+  let payload;
+  try {
+    payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+  } catch {
+    throw new Error("Invalid refresh token");
+  }
+
+  //сверяем пользовалется
+  const user = await prisma.user.findUnique({ where: { id: payload.id } });
+  if (!user || user.refreshToken !== token){ 
+    throw new Error("Invalid refresh token")
+  }
   
-    // 1) Проверяем подпись и срок жизни refresh‑токена
-    let payload;
-    try {
-      payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET); // throws if expired/invalid
-    } catch (err) {
-      throw new Error("Invalid refresh token");
-    }
-  
-    // 2) Находим пользователя
-    const user = await prisma.user.findUnique({ where: { id: payload.id } });
-    if (!user) throw new Error("User not found");
-  
-    // 3) Убеждаемся, что токен из куки совпадает с тем, что хранится в БД
-    if (user.refreshToken !== token) {
-      throw new Error("Invalid refresh token");          // кука подделана/устарела
-    }
-  
-    // 4) Генерируем НОВЫЙ access‑токен (refresh оставляем прежний)
-    const accessToken = jwt.sign(
+  //Условная ротация refresh‑токена: если < 7 дней до истечения
+  const now = Math.floor(Date.now() / 1000);
+  const sevenDays = 7 * 24 * 60 * 60;
+  let newRToken = token; // по умолчанию остаётся прежним
+
+  if (payload.exp - now < sevenDays) {
+    newRToken = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_ACCESS_SECRET,
-      { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m" }
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || "30d" }
     );
-  
-    // 5) Отдаём данные
-    return {
-      accessToken,            // новый короткоживущий токен
-      refreshToken: token,    // тот же, что был в куке и в БД
-      user: {
-        id: user.id,
-        email: user.email,
-        userName: user.userName,
-      },
-    };
+
+    //Сохраняем в БД
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { refreshToken: newRToken },
+    });
+  }
+
+  //генерируем access токен 
+  const accessToken = jwt.sign(
+    { id: user.id, email: user.email },
+    process.env.JWT_ACCESS_SECRET,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || "15m" }
+  );
+
+  return {
+    accessToken,
+    refreshToken: newRToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      userName: user.userName,
+    },
   };
-  
+};
+
 const logout = async (token) => {
   try {
     const payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);

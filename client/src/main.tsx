@@ -4,6 +4,8 @@ import './styles/index.css'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 
+import "./api/interceptors.ts"
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter>

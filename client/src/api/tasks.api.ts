@@ -1,14 +1,10 @@
-import axios from "axios"
 import { useTaskStore } from "../store/task.store"
 import { useAuthStore } from "../store/user.store"
 import { Task } from "../interfaces/task.interface"
 import { v4 as uuidv4 } from "uuid"
+import { api } from "./interceptors"
 
-export const api = axios.create({
-    baseURL: "http://localhost:5000", //default http
-    withCredentials: true, //cookies
-})
-
+import "./interceptors"
 
 export const fetchTasks = async() => {
     const { setTasks } = useTaskStore.getState()
@@ -61,13 +57,14 @@ export const updateTask = async(id: string, updates: Partial<Task>) => {
 
 }
 
-export const deleteTask = async(id: string) => {
-    const { removeTask } = useTaskStore.getState()
+export const deleteTask = async(id: string) => {  
 
-    removeTask(id)
 
     try{
-        await api.delete(`/task/delete-one/${id}`)
+        await api.delete(`/tasks/delete-one/${id}`)
+        const { removeTask } = useTaskStore.getState()
+        removeTask(id)
+
     } catch(err){
         console.log("Failed to delete task", err)
     }
