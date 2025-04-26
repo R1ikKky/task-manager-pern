@@ -6,9 +6,19 @@ interface GuestRouteProps {
 }
 
 const GuestRoute = ({redirectTo = "/" }: GuestRouteProps) => {
-    const { user } = useAuthStore()
+    const { user, isAuthReady } = useAuthStore();
 
-    return user ? <Navigate to={redirectTo} replace /> : <Outlet />
+    // Показываем загрузку пока проверяем авторизацию
+    if (!isAuthReady) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-sky-900 to-indigo-900 
+                          flex items-center justify-center">
+                <div className="text-white text-xl">Загрузка...</div>
+            </div>
+        );
+    }
+
+    return user ? <Navigate to={redirectTo} replace /> : <Outlet />;
 }
 
-export default GuestRoute
+export default GuestRoute;

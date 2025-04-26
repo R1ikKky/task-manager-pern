@@ -19,11 +19,11 @@ const create = async(req, res) => {
         return res.status(400).json({ error: parsed.error.flatten().fieldErrors })
     }
 
-    const {title, description, deadline, importance = "low"} = parsed.data
+    const {title, description, deadline, quadrant = "inbox", importance = "low" } = parsed.data
     const userId = req.user.id
 
     try{
-        const task = await taskService.createTask(title, description, userId, deadline, importance)
+        const task = await taskService.createTask(title, description, userId, deadline, quadrant, importance)
         res.status(201).json(task)
     }catch(error){
         console.error("CREATE ERROR:", error)
@@ -56,6 +56,7 @@ const remove = async(req, res) => {
     const userId = req.user.id
     
     try{
+        console.log('Attempting to delete task:', id, 'for user:', userId)
         await taskService.deleteTask(id, userId)
         res.status(200).json({message: "task deleted"})
     }catch(error){

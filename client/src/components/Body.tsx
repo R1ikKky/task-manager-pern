@@ -1,57 +1,59 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useTaskStore } from "../store/task.store";
-import { fetchTasks } from "../api/tasks.api";
-import AddTaskModal from "./AddTaskModal";
 import TaskItem from "./UI-elements/TaskItem";
-import SearchBar from "./UI-elements/SearchBar";
 import Button from "./UI-elements/Button";
-import { useAuthStore } from "../store/user.store";
+import AddTaskModal from "./AddTaskModal";
+
+/* helper for importance sorting */
+const importanceRank = (imp: string) =>
+  imp === "high" ? 3 : imp === "medium" ? 2 : 1;
 
 const Body = () => {
-  /* local UI‑state */
   const [showModal, setShowModal] = useState(false);
-  const [query, setQuery]         = useState("");
-  const [sort,  setSort]          = useState<"date" | "importance">("date");
+  const [sort, setSort] = useState<"date" | "importance">("date");
 
-  /* global state (tasks) */
-  const tasks      = useTaskStore((s) => s.tasks);
-  const setTasks   = useTaskStore((s) => s.setTasks);
-  const isAuthReady = useAuthStore((s) => s.isAuthReady)
-  const accessToken = useAuthStore((s) => s.accessToken)
+  const tasks = useTaskStore((s) => s.tasks);
 
-
-  /* fetch once on mount */
-  useEffect(() => {
-    console.log("[Body] isAuthReady:", isAuthReady, "token:", accessToken);
-    if (isAuthReady) {
-      fetchTasks().catch(console.error);
+  /* sort & group tasks */
+  const visibleTasks = tasks.slice().sort((a, b) => {
+    // невыполненные сверху
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    // сортировка по выбранному критерию
+    if (sort === "importance") {
+      return importanceRank(b.importance) - importanceRank(a.importance);
     }
-  }, [isAuthReady, accessToken]);
-
-  /* simple search + sort */
-  const visibleTasks = tasks
-    .filter((t) => t.title.toLowerCase().includes(query.toLowerCase()))
-    .sort((a, b) => {
-      if (sort === "importance") return importanceRank(b.importance) - importanceRank(a.importance);
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-    });
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 
   return (
-    <div className="flex flex-col items-center px-6 py-8 w-full">
+    <div className="flex flex-col items-center px-6 py-8 w-full min-h-screen">
       {/* toolbar */}
-      <div className="w-full max-w-4xl mb-4 flex flex-wrap gap-2 items-center justify-between">
-        <Button onClick={() => setShowModal(true)}>+ Add Task</Button>
-        <div className="flex-1 max-w-[320px]">
-          <SearchBar value={query} onChange={setQuery} />
-        </div>
-        <Button onClick={() => setSort(sort === "date" ? "importance" : "date")}
-                className="whitespace-nowrap">
-          Sort: {sort === "date" ? "Latest" : "Importance"}
+      <div className="w-full max-w-4xl mb-8 flex flex-wrap items-center justify-between gap-4">
+        <Button
+          onClick={() => setShowModal(true)}
+          className="text-lg font-semibold px-6 py-3 bg-white/25 hover:bg-white/30 shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          + Add Task
+        </Button>
+
+        <Button
+          onClick={() => setSort(sort === "date" ? "importance" : "date")}
+          className="text-lg font-semibold px-6 py-3 bg-white/25 hover:bg-white/30 shadow-lg hover:shadow-xl transition-all duration-200"
+        >
+          Sort by:&nbsp;{sort === "date" ? "Latest" : "Importance"}
         </Button>
       </div>
 
-      {/* task list */}
-      <div className="w-full max-w-4xl flex flex-col gap-4">
+      {/* empty‑state */}
+      {visibleTasks.length === 0 && (
+        <div className="text-center text-white/70 mt-12">
+          <p className="text-xl font-semibold mb-2">No tasks yet</p>
+          <p className="text-lg">Click "Add Task" to create your first task</p>
+        </div>
+      )}
+
+      {/* list */}
+      <div className="w-full max-w-4xl flex flex-col gap-6">
         {visibleTasks.map((task) => (
           <TaskItem key={task.id} task={task} />
         ))}
@@ -62,9 +64,5 @@ const Body = () => {
     </div>
   );
 };
-
-/* helper for importance sort */
-const importanceRank = (imp: "low" | "medium" | "high") =>
-  imp === "high" ? 2 : imp === "medium" ? 1 : 0;
 
 export default Body;

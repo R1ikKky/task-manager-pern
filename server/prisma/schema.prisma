@@ -24,6 +24,7 @@ model Task {
   importance    String     @default("low")
   deadline      String?
   createdAt     DateTime   @default(now())
+  quadrant      String?    @default("inbox")   
   userId        String
   user          User       @relation(fields: [userId], references: [id])
 }

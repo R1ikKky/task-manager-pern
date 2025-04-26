@@ -5,7 +5,7 @@ interface TaskState {
     tasks: Task[]
     setTasks: (tasks: Task[]) => void
     addTask: (task: Task) => void
-    deleteTask: (id: string) => void
+    removeTask: (id: string) => void
     updateTask: (task: Task) => void
 }
 
@@ -18,7 +18,7 @@ export const useTaskStore = create<TaskState>((set) => ({
         set((state) => ({
             tasks: [...state.tasks, task],
         })),
-    deleteTask: (id) => 
+    removeTask: (id) => 
         set((state) =>({
             tasks: state.tasks.filter((t) => t.id !== id),
         })),

@@ -1,3 +1,10 @@
+export type QuadrantType = 
+  | 'productive_attractive' 
+  | 'productive_unattractive' 
+  | 'unproductive_attractive' 
+  | 'unproductive_unattractive'
+  | "inbox"; 
+
 export interface Task {
     id: string;
     title: string;
@@ -5,7 +12,7 @@ export interface Task {
     completed: boolean;
     deadline?: string;
     importance: 'low' | 'medium' | 'high'; 
-    createdAt: string;
+    createdAt: Date;
     userId: string;
-  }
-  
+    quadrant?: QuadrantType;
+}

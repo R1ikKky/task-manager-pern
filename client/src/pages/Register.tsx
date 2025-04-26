@@ -1,4 +1,3 @@
-// Register.tsx
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { IoIosMail } from 'react-icons/io';
