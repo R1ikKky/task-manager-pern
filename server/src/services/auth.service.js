@@ -57,7 +57,6 @@ const login = async ({ email, password }) => {
 const refresh = async (token) => {
   if (!token) throw new Error("Refresh token absense");
 
-  //проверяем подпись и срок жизни текущего refresh‑токена
   let payload;
   try {
     payload = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
@@ -65,16 +64,14 @@ const refresh = async (token) => {
     throw new Error("Invalid refresh token");
   }
 
-  //сверяем пользовалется
   const user = await prisma.user.findUnique({ where: { id: payload.id } });
   if (!user || user.refreshToken !== token){ 
     throw new Error("Invalid refresh token")
   }
   
-  //Условная ротация refresh‑токена: если < 7 дней до истечения
   const now = Math.floor(Date.now() / 1000);
   const sevenDays = 7 * 24 * 60 * 60;
-  let newRToken = token; // по умолчанию остаётся прежним
+  let newRToken = token; 
 
   if (payload.exp - now < sevenDays) {
     newRToken = jwt.sign(
@@ -83,14 +80,12 @@ const refresh = async (token) => {
       { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || "30d" }
     );
 
-    //Сохраняем в БД
     await prisma.user.update({
       where: { id: user.id },
       data: { refreshToken: newRToken },
     });
   }
 
-  //генерируем access токен 
   const accessToken = jwt.sign(
     { id: user.id, email: user.email },
     process.env.JWT_ACCESS_SECRET,

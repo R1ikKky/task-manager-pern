@@ -2,20 +2,18 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface CustomDatePickerProps {
-  value: string;                       // ISO-дата YYYY-MM-DD
-  onChange: (value: string) => void;   // callback вверх
+  value: string;                       
+  onChange: (value: string) => void;  
   label: string;
 }
 
 type NullableDate = Date | null;
 
 export default function CustomDatePicker({ value, onChange, label }: CustomDatePickerProps) {
-  /* local-state ------------------------------------------------------------- */
   const [isOpen, setIsOpen]     = useState(false);
   const [currentDate, setDate]  = useState<NullableDate>(value ? new Date(value) : new Date());
   const pickerRef               = useRef<HTMLDivElement>(null);
 
-  /* click-outside ----------------------------------------------------------- */
   useEffect(() => {
     const handle = (e: MouseEvent) => {
       if (pickerRef.current && !pickerRef.current.contains(e.target as Node)) setIsOpen(false);
@@ -24,7 +22,6 @@ export default function CustomDatePicker({ value, onChange, label }: CustomDateP
     return () => document.removeEventListener("mousedown", handle);
   }, []);
 
-  /* helpers ----------------------------------------------------------------- */
   const formatDate = (iso: string) =>
     !iso
       ? ""
@@ -35,11 +32,9 @@ export default function CustomDatePicker({ value, onChange, label }: CustomDateP
 
   const months = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 
-  /* month switch ------------------------------------------------------------ */
   const prevMonth = () => setDate(new Date(currentDate!.setMonth(currentDate!.getMonth() - 1)));
   const nextMonth = () => setDate(new Date(currentDate!.setMonth(currentDate!.getMonth() + 1)));
 
-  /* date select ------------------------------------------------------------- */
   const handleSelect = (day: number) => {
     const y   = currentDate!.getFullYear();
     const m   = currentDate!.getMonth();        // 0-based
@@ -48,17 +43,14 @@ export default function CustomDatePicker({ value, onChange, label }: CustomDateP
     setIsOpen(false);
   };
 
-  /* render grid ------------------------------------------------------------- */
   const renderDays = () => {
     const total = daysInMonth(currentDate!.getFullYear(), currentDate!.getMonth());
     const first = firstWeekday(currentDate!.getFullYear(), currentDate!.getMonth());
     const sel   = value ? new Date(value) : null;
     const cells: React.ReactNode[] = [];
 
-    // пустые ячейки до 1-го
     for (let i = 0; i < (first === 0 ? 6 : first - 1); i++) cells.push(<div key={`e${i}`} className="h-7" />);
 
-    // сами дни
     for (let d = 1; d <= total; d++) {
       const cur      = new Date(currentDate!.getFullYear(), currentDate!.getMonth(), d);
       const isSel    = sel && cur.toDateString() === sel.toDateString();
@@ -80,12 +72,10 @@ export default function CustomDatePicker({ value, onChange, label }: CustomDateP
     return cells;
   };
 
-  /* UI ---------------------------------------------------------------------- */
   return (
     <div ref={pickerRef} onClick={(e) => e.stopPropagation()} className="relative">
       <label className="block text-sm text-white/70 mb-2">{label}</label>
 
-      {/* поле-тогглер */}
       <div
         onClick={() => setIsOpen(!isOpen)}
         className="w-full px-4 py-3 rounded-xl bg-black/10 backdrop-blur-sm
@@ -100,7 +90,6 @@ export default function CustomDatePicker({ value, onChange, label }: CustomDateP
         </svg>
       </div>
 
-      {/* popup */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -114,7 +103,6 @@ export default function CustomDatePicker({ value, onChange, label }: CustomDateP
                        shadow-xl shadow-black/30
                        left-1 transform -translate-x-1/2"
           >
-            {/* header */}
             <div className="flex justify-between items-center mb-4">
               <button type="button" onClick={prevMonth} className="p-1.5 hover:bg-white/10 rounded-lg text-white/70 hover:text-white">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -131,19 +119,15 @@ export default function CustomDatePicker({ value, onChange, label }: CustomDateP
               </button>
             </div>
 
-            {/* weekdays */}
             <div className="grid grid-cols-7 gap-1 mb-1 text-xs font-medium text-white/50">
               {["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map((d) => (
                 <div key={d} className="h-7 flex items-center justify-center">{d}</div>
               ))}
             </div>
 
-            {/* grid */}
             <div className="grid grid-cols-7 gap-1">{renderDays()}</div>
 
-            {/* quick-actions */}
             <div className="mt-3 pt-3 border-t border-white/10 flex justify-between">
-              {/* «Сегодня» — без UTC-сдвига */}
               <button
                 type="button"
                 onClick={() => {
@@ -157,7 +141,6 @@ export default function CustomDatePicker({ value, onChange, label }: CustomDateP
                 Сегодня
               </button>
 
-              {/* «Очистить» */}
               <button
                 type="button"
                 onClick={() => { onChange(""); setIsOpen(false); }}
